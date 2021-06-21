@@ -1,7 +1,7 @@
 module Pages.Home exposing (..)
 
-import Html exposing (Html, button, div, img, p, text)
-import Html.Attributes exposing (class, src)
+import Html exposing (Html, a, button, div, footer, img, p, text)
+import Html.Attributes exposing (class, href, src)
 import Html.Events exposing (onClick)
 import Image exposing (Image)
 
@@ -15,6 +15,7 @@ type alias Model =
 type Msg
     = UserClickedImage Image
     | UserClickedClose
+    | UserClickedShow Image
 
 
 init : ( Model, Cmd Msg )
@@ -38,6 +39,9 @@ update msg model =
             ( { model | highlightedImage = Nothing }
             , Cmd.none
             )
+
+        UserClickedShow image ->
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -105,6 +109,14 @@ viewImage image =
                             []
                         ]
                     ]
+                ]
+            , footer [ class "card-footer" ]
+                [ a
+                    [ class "card-footer-item"
+                    , href "#"
+                    , onClick <| UserClickedShow image
+                    ]
+                    [ text "Voir" ]
                 ]
             ]
         ]

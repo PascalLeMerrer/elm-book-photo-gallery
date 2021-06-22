@@ -49,7 +49,13 @@ update msg model =
             )
 
         SelectionMsg selectionMsg ->
-            ( model, Cmd.none )
+            let
+                ( selectionModel, selectionCmd ) =
+                    Selection.update selectionMsg model.selectionModel
+            in
+            ( { model | selectionModel = selectionModel }
+            , selectionCmd |> Cmd.map SelectionMsg
+            )
 
 
 main : Program () Model Msg

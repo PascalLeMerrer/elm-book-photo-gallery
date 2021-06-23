@@ -16,7 +16,7 @@ type alias Model =
 type Msg
     = UserClickedHome
     | UserClickedModify Image
-    | UserClickedValidate
+    | UserClickedValidate Image
     | UserChangedTitle String
 
 
@@ -49,8 +49,11 @@ update msg model =
             , Cmd.none
             )
 
-        UserClickedValidate ->
-            ( { model | mode = ReadOnly }
+        UserClickedValidate imageToRename ->
+            ( { model
+                | mode = ReadOnly
+                , image = Just { imageToRename | title = model.editedTitle }
+              }
             , Cmd.none
             )
 
@@ -134,7 +137,7 @@ viewEditedTitle model image =
         [ text image.title ]
     , button
         [ class "button is-primary is-small ml-3"
-        , onClick UserClickedValidate
+        , onClick (UserClickedValidate image)
         ]
         [ text "Valider" ]
     ]

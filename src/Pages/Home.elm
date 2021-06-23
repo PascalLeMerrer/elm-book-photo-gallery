@@ -7,8 +7,7 @@ import Image exposing (Image)
 
 
 type alias Model =
-    { images : List Image
-    , highlightedImage : Maybe Image
+    { highlightedImage : Maybe Image
     }
 
 
@@ -20,8 +19,7 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( { images = Image.defaultList
-      , highlightedImage = Nothing
+    ( { highlightedImage = Nothing
       }
     , Cmd.none
     )
@@ -44,18 +42,18 @@ update msg model =
             ( model, Cmd.none )
 
 
-view : Model -> Html Msg
-view model =
+view : Model -> List Image -> Html Msg
+view model images =
     div []
         [ viewHighlightedImage model
-        , viewImages model
+        , viewImages images
         ]
 
 
-viewImages : Model -> Html Msg
-viewImages model =
+viewImages : List Image -> Html Msg
+viewImages images =
     div [ class "columns is-multiline" ]
-        (List.map viewImage model.images)
+        (List.map viewImage images)
 
 
 viewHighlightedImage : Model -> Html Msg

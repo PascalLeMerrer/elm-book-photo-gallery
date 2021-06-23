@@ -3,6 +3,7 @@ module PhotoGallery exposing (..)
 import Browser
 import Html exposing (Html, div, h1, text)
 import Html.Attributes exposing (class)
+import Image exposing (Image)
 import Pages.Home as Home exposing (Msg(..))
 import Pages.Selection as Selection
 
@@ -10,6 +11,7 @@ import Pages.Selection as Selection
 type alias Model =
     { homeModel : Home.Model
     , selectionModel : Selection.Model
+    , images : List Image
     }
 
 
@@ -26,6 +28,7 @@ init () =
     in
     ( { homeModel = homeModel
       , selectionModel = Selection.init Nothing
+      , images = Image.defaultList
       }
     , homeCmd |> Cmd.map HomeMsg
     )
@@ -98,7 +101,7 @@ viewTitle =
 
 viewHome : Model -> Html Msg
 viewHome model =
-    Home.view model.homeModel
+    Home.view model.homeModel model.images
         |> Html.map HomeMsg
 
 

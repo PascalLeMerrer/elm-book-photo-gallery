@@ -1,5 +1,6 @@
 module Pages.Home exposing (..)
 
+import Effect exposing (Effect)
 import Html exposing (Html, a, button, div, footer, img, p, text)
 import Html.Attributes exposing (class, href, src)
 import Html.Events exposing (onClick)
@@ -25,21 +26,21 @@ init =
     )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
         UserClickedImage image ->
             ( { model | highlightedImage = Just image }
-            , Cmd.none
+            , Effect.none
             )
 
         UserClickedClose ->
             ( { model | highlightedImage = Nothing }
-            , Cmd.none
+            , Effect.none
             )
 
         UserClickedShow image ->
-            ( model, Cmd.none )
+            ( model, Effect.none )
 
 
 view : Model -> List Image -> Html Msg

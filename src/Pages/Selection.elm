@@ -1,5 +1,6 @@
 module Pages.Selection exposing (..)
 
+import Effect exposing (Effect)
 import Html exposing (Html, a, button, div, img, input, span, text)
 import Html.Attributes exposing (class, href, src, value)
 import Html.Events exposing (onClick, onInput)
@@ -33,12 +34,12 @@ init maybeImage =
     }
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
         UserClickedHome ->
             ( { model | image = Nothing }
-            , Cmd.none
+            , Effect.none
             )
 
         UserClickedModify image ->
@@ -46,7 +47,7 @@ update msg model =
                 | mode = Edition
                 , editedTitle = image.title
               }
-            , Cmd.none
+            , Effect.none
             )
 
         UserClickedValidate imageToRename ->
@@ -54,12 +55,12 @@ update msg model =
                 | mode = ReadOnly
                 , image = Just { imageToRename | title = model.editedTitle }
               }
-            , Cmd.none
+            , Effect.UpdateTitle imageToRename model.editedTitle
             )
 
         UserChangedTitle string ->
             ( { model | editedTitle = string }
-            , Cmd.none
+            , Effect.none
             )
 
 

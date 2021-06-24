@@ -1,6 +1,7 @@
 module PhotoGallery exposing (..)
 
 import Browser
+import Effect exposing (Effect)
 import Html exposing (Html, div, h1, text)
 import Html.Attributes exposing (class)
 import Image exposing (Image)
@@ -34,30 +35,30 @@ init () =
     )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
         HomeMsg (UserClickedShow image) ->
             ( { model | selectionModel = Selection.init (Just image) }
-            , Cmd.none
+            , Effect.none
             )
 
         HomeMsg homeMsg ->
             let
-                ( homeModel, homeCmd ) =
+                ( homeModel, effectCmd ) =
                     Home.update homeMsg model.homeModel
             in
             ( { model | homeModel = homeModel }
-            , homeCmd |> Cmd.map HomeMsg
+            , effectCmd |> Effect.map HomeMsg
             )
 
         SelectionMsg selectionMsg ->
             let
-                ( selectionModel, selectionCmd ) =
+                ( selectionModel, effectCmd ) =
                     Selection.update selectionMsg model.selectionModel
             in
             ( { model | selectionModel = selectionModel }
-            , selectionCmd |> Cmd.map SelectionMsg
+            , effectCmd |> Effect.map SelectionMsg
             )
 
 
@@ -65,7 +66,7 @@ main : Program () Model Msg
 main =
     Browser.document
         { init = init
-        , update = update
+        , update = \msg model -> update msg model |> Effect.perform
         , view = view
         , subscriptions = \_ -> Sub.none
         }

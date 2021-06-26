@@ -1,6 +1,6 @@
 module Pages.Home exposing (..)
 
-import Html exposing (Html, button, div, img, text)
+import Html exposing (Html, button, div, img, p, text)
 import Html.Attributes exposing (class, src)
 import Html.Events exposing (onClick)
 import Image exposing (Image)
@@ -94,9 +94,17 @@ viewCloseButton =
 viewImage : Image -> Html Msg
 viewImage image =
     div [ class "column is-one-quarter" ]
-        [ img
-            [ src image.small
-            , onClick <| UserClickedImage image
+        [ div [ class "card" ]
+            [ div [ class "card-content" ]
+                [ div [ class "card-content" ]
+                    [ p [ class "image is-4by3" ]
+                        [ img
+                            [ src image.small
+                            , onClick (UserClickedImage image)
+                            ]
+                            []
+                        ]
+                    ]
+                ]
             ]
-            []
         ]

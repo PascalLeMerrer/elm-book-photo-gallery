@@ -29,7 +29,15 @@ init () =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        HomeMsg homeMsg ->
+            let
+                ( homeModel, homeCmd ) =
+                    Home.update homeMsg model.homeModel
+            in
+            ( { model | homeModel = homeModel }
+            , homeCmd |> Cmd.map HomeMsg
+            )
 
 
 main : Program () Model Msg

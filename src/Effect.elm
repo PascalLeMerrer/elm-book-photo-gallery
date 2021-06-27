@@ -1,8 +1,11 @@
 module Effect exposing (Effect(..), map, none, perform)
 
+import Browser exposing (UrlRequest(..))
+import Browser.Navigation as Nav
 import Http
 import Image exposing (Image, imageListDecoder)
 import List.Extra
+import Url
 
 
 type Effect msg
@@ -10,6 +13,7 @@ type Effect msg
     | None
     | LoadImages (Result Http.Error (List Image) -> msg)
     | UpdateImages (List Image)
+    | GoToUrl Nav.Key UrlRequest
 
 
 type alias Model a =
@@ -39,6 +43,18 @@ perform ( model, effect ) =
             ( { model | images = images }
             , Cmd.none
             )
+
+        GoToUrl key urlRequest ->
+            case urlRequest of
+                Internal url ->
+                    ( model
+                    , Nav.pushUrl key (Url.toString url)
+                    )
+
+                External url ->
+                    ( model
+                    , Nav.load url
+                    )
 
 
 none =
@@ -71,3 +87,6 @@ map parentMsgConstructor effect =
 
         UpdateImages images ->
             UpdateImages images
+
+        GoToUrl key urlRequest ->
+            GoToUrl key urlRequest

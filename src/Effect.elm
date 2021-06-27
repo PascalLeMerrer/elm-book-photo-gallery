@@ -1,12 +1,15 @@
 module Effect exposing (Effect(..), map, none, perform)
 
-import Image exposing (Image)
+import Http
+import Image exposing (Image, imageListDecoder)
 import List.Extra
 
 
 type Effect msg
     = UpdateTitle Image String
     | None
+    | LoadImages (Result Http.Error (List Image) -> msg)
+    | UpdateImages (List Image)
 
 
 type alias Model a =
@@ -23,6 +26,19 @@ perform ( model, effect ) =
 
         None ->
             ( model, Cmd.none )
+
+        LoadImages msg ->
+            ( model
+            , Http.get
+                { url = "http://localhost:7000/search/monde"
+                , expect = Http.expectJson msg imageListDecoder
+                }
+            )
+
+        UpdateImages images ->
+            ( { model | images = images }
+            , Cmd.none
+            )
 
 
 none =
@@ -49,3 +65,9 @@ map parentMsgConstructor effect =
 
         None ->
             None
+
+        LoadImages msg ->
+            LoadImages (msg >> parentMsgConstructor)
+
+        UpdateImages images ->
+            UpdateImages images

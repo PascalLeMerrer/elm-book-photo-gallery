@@ -5,6 +5,7 @@ import Browser.Navigation exposing (Key)
 import Effect exposing (Effect)
 import Html exposing (Html, div, h1, text)
 import Html.Attributes exposing (class)
+import Http
 import Image exposing (Image)
 import List.Extra
 import Pages.Home as Home exposing (Msg(..))
@@ -18,6 +19,7 @@ type alias Model =
     { images : List Image
     , page : Page
     , navigationKey : Key
+    , initialUrl : Url
     }
 
 
@@ -26,6 +28,7 @@ type Msg
     | SelectionMsg Selection.Msg
     | UrlChanged Url
     | UserClickedLink UrlRequest
+    | ServerReturnedImages (Result Http.Error (List Image))
 
 
 type Page
@@ -40,14 +43,15 @@ init url navigationKey =
         _ =
             Debug.log "url initiale" url
 
-        ( homeModel, homeEffect ) =
+        homeModel =
             Home.init
     in
     ( { images = []
-      , page = HomePage homeModel
+      , page = PageNotFound
       , navigationKey = navigationKey
+      , initialUrl = url
       }
-    , homeEffect |> Effect.map HomeMsg
+    , Effect.LoadImages ServerReturnedImages
     )
 
 
@@ -87,6 +91,14 @@ update msg model =
             in
             ( model, Effect.GoToUrl model.navigationKey urlRequest )
 
+        ( ServerReturnedImages (Ok images), PageNotFound ) ->
+            gotoPage model.initialUrl { model | images = images }
+
+        ( ServerReturnedImages (Err error), PageNotFound ) ->
+            ( model
+            , Effect.None
+            )
+
         _ ->
             ( model, Effect.None )
 
@@ -112,11 +124,11 @@ gotoPage url model =
 
         Just HomeRoute ->
             let
-                ( homeModel, homeEffect ) =
+                homeModel =
                     Home.init
             in
             ( { model | page = HomePage homeModel }
-            , Effect.map HomeMsg homeEffect
+            , Effect.none
             )
 
         Nothing ->

@@ -21,17 +21,17 @@ type Msg
     | SelectionMsg Selection.Msg
 
 
-init : () -> ( Model, Cmd Msg )
+init : () -> ( Model, Effect Msg )
 init () =
     let
-        ( homeModel, homeCmd ) =
+        ( homeModel, homeEffect ) =
             Home.init
     in
     ( { homeModel = homeModel
       , selectionModel = Selection.init Nothing
       , images = Image.defaultList
       }
-    , homeCmd |> Cmd.map HomeMsg
+    , homeEffect |> Effect.map HomeMsg
     )
 
 
@@ -65,7 +65,7 @@ update msg model =
 main : Program () Model Msg
 main =
     Browser.document
-        { init = init
+        { init = init >> Effect.perform
         , update = \msg model -> update msg model |> Effect.perform
         , view = view
         , subscriptions = \_ -> Sub.none

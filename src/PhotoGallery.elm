@@ -1,35 +1,48 @@
 module PhotoGallery exposing (..)
 
-import Browser
+import Browser exposing (UrlRequest)
+import Browser.Navigation exposing (Key)
 import Effect exposing (Effect)
 import Html exposing (Html, div, h1, text)
 import Html.Attributes exposing (class)
 import Image exposing (Image)
 import Pages.Home as Home exposing (Msg(..))
 import Pages.Selection as Selection
+import Url exposing (Url)
 
 
 type alias Model =
-    { homeModel : Home.Model
-    , selectionModel : Selection.Model
-    , images : List Image
+    { images : List Image
+    , page : Page
+    , navigationKey : Key
     }
 
 
 type Msg
     = HomeMsg Home.Msg
     | SelectionMsg Selection.Msg
+    | UrlChanged Url
+    | UserClickedLink UrlRequest
 
 
-init : () -> ( Model, Effect Msg )
-init () =
+type Page
+    = HomePage Home.Model
+    | SelectionPage Selection.Model
+    | PageNotFound
+
+
+init : Url -> Key -> ( Model, Effect Msg )
+init url navigationKey =
     let
+        _ =
+            Debug.log "url initiale" url
+
         ( homeModel, homeEffect ) =
             Home.init
     in
-    ( { homeModel = homeModel
-      , selectionModel = Selection.init Nothing
-      , images = Image.defaultList
+    ( { images = []
+      , page = HomePage homeModel
+      , navigationKey = navigationKey
       }
     , homeEffect |> Effect.map HomeMsg
     )
@@ -37,35 +50,50 @@ init () =
 
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
-    case msg of
-        HomeMsg (UserClickedShow image) ->
-            ( { model | selectionModel = Selection.init (Just image) }
+    case ( msg, model.page ) of
+        ( HomeMsg (UserClickedShow image), HomePage _ ) ->
+            ( { model | page = SelectionPage <| Selection.init (Just image) }
             , Effect.none
             )
 
-        HomeMsg homeMsg ->
+        ( HomeMsg homeMsg, HomePage homeModel ) ->
             let
-                ( homeModel, effectCmd ) =
-                    Home.update homeMsg model.homeModel
+                ( updatedHomeModel, effectCmd ) =
+                    Home.update homeMsg homeModel
             in
-            ( { model | homeModel = homeModel }
+            ( { model | page = HomePage updatedHomeModel }
             , effectCmd |> Effect.map HomeMsg
             )
 
-        SelectionMsg selectionMsg ->
+        ( SelectionMsg selectionMsg, SelectionPage selectionModel ) ->
             let
-                ( selectionModel, effectCmd ) =
-                    Selection.update selectionMsg model.selectionModel
+                ( updatedSelectionModel, effectCmd ) =
+                    Selection.update selectionMsg selectionModel
             in
-            ( { model | selectionModel = selectionModel }
+            ( { model | page = SelectionPage updatedSelectionModel }
             , effectCmd |> Effect.map SelectionMsg
             )
+
+        ( UrlChanged url, _ ) ->
+            ( model, Effect.None )
+
+        ( UserClickedLink urlRequest, _ ) ->
+            let
+                _ =
+                    Debug.log "UserClickedLink" urlRequest
+            in
+            ( model, Effect.GoToUrl model.navigationKey urlRequest )
+
+        _ ->
+            ( model, Effect.None )
 
 
 main : Program () Model Msg
 main =
-    Browser.document
-        { init = init >> Effect.perform
+    Browser.application
+        { init = \() url key -> init url key |> Effect.perform
+        , onUrlChange = \url -> UrlChanged url
+        , onUrlRequest = \urlRequest -> UserClickedLink urlRequest
         , update = \msg model -> update msg model |> Effect.perform
         , view = view
         , subscriptions = \_ -> Sub.none
@@ -85,13 +113,21 @@ viewBody : Model -> Html Msg
 viewBody model =
     div [ class "container" ]
         [ viewTitle
-        , case model.selectionModel.image of
-            Just _ ->
-                viewSelection model
+        , case model.page of
+            SelectionPage selectionModel ->
+                viewSelection selectionModel
 
-            Nothing ->
-                viewHome model
+            HomePage homeModel ->
+                viewHome model homeModel
+
+            PageNotFound ->
+                viewPageNotFound
         ]
+
+
+viewPageNotFound : Html Msg
+viewPageNotFound =
+    div [] [ text "Page non trouvée." ]
 
 
 viewTitle : Html Msg
@@ -100,13 +136,13 @@ viewTitle =
         [ text "Photo Gallery" ]
 
 
-viewHome : Model -> Html Msg
-viewHome model =
-    Home.view model.homeModel model.images
+viewHome : Model -> Home.Model -> Html Msg
+viewHome model homeModel =
+    Home.view homeModel model.images
         |> Html.map HomeMsg
 
 
-viewSelection : Model -> Html Msg
-viewSelection model =
-    Selection.view model.selectionModel
+viewSelection : Selection.Model -> Html Msg
+viewSelection selectionModel =
+    Selection.view selectionModel
         |> Html.map SelectionMsg

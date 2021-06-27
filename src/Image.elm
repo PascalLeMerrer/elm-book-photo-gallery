@@ -5,8 +5,9 @@ import Json.Decode.Pipeline exposing (hardcoded, required)
 
 
 type alias Image =
-    { large : String
+    { id : Int
     , small : String
+    , large : String
     , title : String
     }
 
@@ -14,6 +15,7 @@ type alias Image =
 imageDecoder : Decode.Decoder Image
 imageDecoder =
     Decode.succeed Image
+        |> hardcoded 0
         |> required "thumbnail" imageUrlDecoder
         |> required "large" imageUrlDecoder
         |> hardcoded ""
@@ -21,7 +23,8 @@ imageDecoder =
 
 imageUrlDecoder : Decode.Decoder String
 imageUrlDecoder =
-    Decode.string |> Decode.andThen addUrlBase
+    Decode.string
+        |> Decode.andThen addUrlBase
 
 
 addUrlBase : String -> Decode.Decoder String
@@ -32,20 +35,14 @@ addUrlBase path =
 imageListDecoder : Decode.Decoder (List Image)
 imageListDecoder =
     Decode.field "results" (Decode.list imageDecoder)
+        |> Decode.andThen addIdentifiers
 
 
-defaultList : List Image
-defaultList =
-    [ { small = "http://localhost:7000/images/LON1_small.jpeg"
-      , large = "http://localhost:7000/images/LON1_large.jpeg"
-      , title = "Londres 1"
-      }
-    , { small = "http://localhost:7000/images/LON2_small.jpeg"
-      , large = "http://localhost:7000/images/LON2_large.jpeg"
-      , title = "Londres 2"
-      }
-    , { small = "http://localhost:7000/images/LON3_small.jpeg"
-      , large = "http://localhost:7000/images/LON3_large.jpeg"
-      , title = "Londres 3"
-      }
-    ]
+addIdentifiers : List Image -> Decode.Decoder (List Image)
+addIdentifiers images =
+    Decode.succeed (List.indexedMap addImageId images)
+
+
+addImageId : Int -> Image -> Image
+addImageId index image =
+    { image | id = index + 1 }

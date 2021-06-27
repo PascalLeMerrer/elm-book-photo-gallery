@@ -124,7 +124,7 @@ viewImage image =
             , footer [ class "card-footer" ]
                 [ a
                     [ class "card-footer-item"
-                    , href "#"
+                    , href ("/selection/" ++ String.fromInt image.id)
                     , onClick <| UserClickedShow image
                     ]
                     [ text "Voir" ]

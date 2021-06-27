@@ -4,7 +4,6 @@ import Effect exposing (Effect)
 import Html exposing (Html, a, button, div, footer, img, p, text)
 import Html.Attributes exposing (class, href, src)
 import Html.Events exposing (onClick)
-import Http
 import Image exposing (Image)
 
 
@@ -17,15 +16,12 @@ type Msg
     = UserClickedImage Image
     | UserClickedClose
     | UserClickedShow Image
-    | ServerReturnedImages (Result Http.Error (List Image))
 
 
-init : ( Model, Effect Msg )
+init : Model
 init =
-    ( { highlightedImage = Nothing
-      }
-    , Effect.LoadImages ServerReturnedImages
-    )
+    { highlightedImage = Nothing
+    }
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -43,16 +39,6 @@ update msg model =
 
         UserClickedShow image ->
             ( model, Effect.none )
-
-        ServerReturnedImages (Ok images) ->
-            ( model
-            , Effect.UpdateImages images
-            )
-
-        ServerReturnedImages (Err error) ->
-            ( model
-            , Effect.None
-            )
 
 
 view : Model -> List Image -> Html Msg

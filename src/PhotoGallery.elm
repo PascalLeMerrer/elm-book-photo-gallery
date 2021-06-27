@@ -6,9 +6,12 @@ import Effect exposing (Effect)
 import Html exposing (Html, div, h1, text)
 import Html.Attributes exposing (class)
 import Image exposing (Image)
+import List.Extra
 import Pages.Home as Home exposing (Msg(..))
 import Pages.Selection as Selection
+import Route exposing (Route(..))
 import Url exposing (Url)
+import Url.Parser as Parser
 
 
 type alias Model =
@@ -75,7 +78,7 @@ update msg model =
             )
 
         ( UrlChanged url, _ ) ->
-            ( model, Effect.None )
+            gotoPage url model
 
         ( UserClickedLink urlRequest, _ ) ->
             let
@@ -86,6 +89,42 @@ update msg model =
 
         _ ->
             ( model, Effect.None )
+
+
+{-| Changes the current page according to the provided route
+-}
+gotoPage : Url -> Model -> ( Model, Effect Msg )
+gotoPage url model =
+    case Parser.parse Route.parser url of
+        Just (SelectionRoute imageId) ->
+            let
+                selectedImage =
+                    List.Extra.find (\image -> image.id == imageId) model.images
+
+                selectionModel =
+                    Selection.init selectedImage
+            in
+            ( { model
+                | page = SelectionPage selectionModel
+              }
+            , Effect.none
+            )
+
+        Just HomeRoute ->
+            let
+                ( homeModel, homeEffect ) =
+                    Home.init
+            in
+            ( { model | page = HomePage homeModel }
+            , Effect.map HomeMsg homeEffect
+            )
+
+        Nothing ->
+            ( { model
+                | page = PageNotFound
+              }
+            , Effect.none
+            )
 
 
 main : Program () Model Msg

@@ -15,8 +15,7 @@ type alias Model =
 
 
 type Msg
-    = UserClickedHome
-    | UserClickedModify Image
+    = UserClickedModify Image
     | UserClickedValidate Image
     | UserChangedTitle String
 
@@ -37,11 +36,6 @@ init maybeImage =
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        UserClickedHome ->
-            ( { model | image = Nothing }
-            , Effect.none
-            )
-
         UserClickedModify image ->
             ( { model
                 | mode = Edition
@@ -76,8 +70,7 @@ viewHomeLink : Model -> Html Msg
 viewHomeLink model =
     div []
         [ a
-            [ href "#"
-            , onClick UserClickedHome
+            [ href "/"
             ]
             [ text "Accueil > "
             ]

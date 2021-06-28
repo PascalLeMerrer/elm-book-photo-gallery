@@ -40,9 +40,6 @@ type Page
 init : Url -> Key -> ( Model, Effect Msg )
 init url navigationKey =
     let
-        _ =
-            Debug.log "url initiale" url
-
         homeModel =
             Home.init
     in
@@ -85,10 +82,6 @@ update msg model =
             gotoPage url model
 
         ( UserClickedLink urlRequest, _ ) ->
-            let
-                _ =
-                    Debug.log "UserClickedLink" urlRequest
-            in
             ( model, Effect.GoToUrl model.navigationKey urlRequest )
 
         ( ServerReturnedImages (Ok images), PageNotFound ) ->
